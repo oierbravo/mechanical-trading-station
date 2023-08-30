@@ -1,0 +1,25 @@
+[19:35:08] [INIT] KubeJS 1902.6.1-build.348; MC 1902 forge
+[19:35:08] [INIT] Loaded plugins:
+[19:35:08] [INIT] - dev.latvian.mods.kubejs.forge.BuiltinKubeJSForgePlugin
+[19:35:08] [INIT] - com.oierbravo.trading_station.compat.kubejs.KubeJSPlugin
+[19:35:09] [INFO] server_scripts:example.js:5: Hello, World! (Loaded server scripts)
+[19:35:09] [INFO] Loaded script server_scripts:example.js in 0.018 s
+[19:35:09] [INFO] Loaded 1/1 KubeJS server scripts in 0.033 s
+[19:35:09] [INFO] Scripts loaded
+[19:35:09] [INFO] Initializing recipe event...
+[19:35:10] [INFO] Processing recipes...
+[19:35:10] [INFO] Found 2206 recipes in 69.43 ms
+[19:35:10] [INFO] Posted recipe events in 36.47 ms
+[19:35:10] [INFO] Added 9 recipes, removed 0 recipes, modified 0 recipes, with 0 failed recipes in 47.83 ms
+[19:35:10] [INFO] ======== Debug output of all added recipes ========
+[19:35:10] [INFO] trading_station:kjs_e7uj9haokrqld1ctsadzrj2kd: {"type":"trading_station:trading","result":{"item":"minecraft:emerald","count":5},"ingredients":[{"item":"minecraft:diamond","count":5}]}
+[19:35:10] [INFO] trading_station:kjs_998k0tkz9cuoqaxuv7o9zutrb: {"type":"trading_station:trading","result":{"item":"minecraft:emerald","count":5},"ingredients":[{"item":"minecraft:oak_log","count":5},{"item":"minecraft:birch_log","count":10}],"processingTime":100}
+[19:35:10] [INFO] trading_station:kjs_f2n64683d4fc59cpbbkd26ns1: {"type":"trading_station:trading","result":{"item":"minecraft:emerald","count":5},"ingredients":[{"item":"minecraft:diamond","count":5}],"processingTime":100}
+[19:35:10] [INFO] trading_station:kjs_3t0tl8kz34awd498lwhmfkcvu: {"type":"trading_station:trading","result":{"item":"minecraft:andesite","count":2},"ingredients":[{"item":"minecraft:cobblestone","count":2}],"processingTime":100}
+[19:35:10] [INFO] trading_station:kjs_f2yq71tywm3oiacilmz6ymonh: {"type":"trading_station:trading","result":{"item":"minecraft:enchanted_book","count":1,"nbt":"{StoredEnchantments:[{id:\"power\",lvl:5s}]}"},"ingredients":[{"item":"minecraft:stone"}],"processingTime":100}
+[19:35:10] [INFO] trading_station:kjs_be1hureggo4ls1rdw5qeobt16: {"type":"trading_station:trading","result":{"item":"minecraft:diamond_sword","count":1,"nbt":"{Damage:0,Enchantments:[{id:\"power\",lvl:5s}]}"},"ingredients":[{"item":"minecraft:diamond","count":5}],"processingTime":100,"biome":{"tag":"minecraft:is_beach"}}
+[19:35:10] [INFO] trading_station:kjs_cxaol6q468szae0989ytt3f2j: {"type":"trading_station:trading","result":{"item":"minecraft:diamond_sword","count":1,"nbt":"{Damage:0,Enchantments:[{id:\"mending\",lvl:1s}]}"},"ingredients":[{"item":"minecraft:diamond","count":5}],"processingTime":100,"biome":{"name":"minecraft:plains"}}
+[19:35:10] [INFO] trading_station:kjs_9x8p137sxzzauzs0gh3z174la: {"type":"trading_station:trading","result":{"item":"minecraft:diamond_sword","count":1,"nbt":"{Damage:0,Enchantments:[{id:\"looting\",lvl:1s}]}"},"ingredients":[{"item":"minecraft:diamond","count":5}],"processingTime":100,"exclusiveTo":["mechanical"]}
+[19:35:10] [INFO] trading_station:kjs_ch0t9yuijcp5whv7ca4jffbjc: {"type":"trading_station:trading","result":{"item":"minecraft:diamond_sword","count":1,"nbt":"{Damage:0,Enchantments:[{id:\"sharpness\",lvl:1s}]}"},"ingredients":[{"item":"minecraft:diamond","count":5}],"processingTime":100,"exclusiveTo":["powered","mechanical"]}
+[19:35:10] [INFO] ======== Debug output of all modified recipes ========
+[19:35:10] [INFO] ======== Debug output of all removed recipes ========

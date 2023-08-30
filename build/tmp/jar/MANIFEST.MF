@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Specification-Title: mechanical_trading_station
+Specification-Vendor: oierbravo
+Specification-Version: 1
+Implementation-Title: mechanical-trading-station
+Implementation-Version: 1.19.2-0.0.1.c
+Implementation-Vendor: oierbravo
+Implementation-Timestamp: 2023-08-30T19:42:46+0200
+

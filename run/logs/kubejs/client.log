@@ -1,0 +1,7 @@
+[19:32:53] [INIT] KubeJS 1902.6.1-build.348; MC 1902 forge
+[19:32:53] [INIT] Loaded plugins:
+[19:32:53] [INIT] - dev.latvian.mods.kubejs.forge.BuiltinKubeJSForgePlugin
+[19:32:53] [INIT] - com.oierbravo.trading_station.compat.kubejs.KubeJSPlugin
+[19:32:53] [INFO] client_scripts:example.js:5: Hello, World! (Loaded client scripts)
+[19:32:53] [INFO] Loaded script client_scripts:example.js in 0.0 s
+[19:32:53] [INFO] Loaded 1/1 KubeJS client scripts in 0.016 s

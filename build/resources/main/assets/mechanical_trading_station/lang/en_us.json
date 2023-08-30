@@ -1,0 +1,17 @@
+{
+
+	"_": "->------------------------]  Game Elements  [------------------------<-",
+
+	"block.mechanical_trading_station.mechanical_trading_station": "Mechanical Trading Station",
+	"block.mechanical_trading_station.mechanical_trading_station_unbreakable": "Mechanical Trading Station (Unbreakable)",
+
+
+	"_": "->------------------------]  UI  [------------------------<-",
+
+	"config.jade.plugin_mechanical_trading_station.data": "Mechanical trading station",
+
+	"mechanical_trading_station.display_source.traded_items": "Traded item count",
+
+	"_": "Thank you for translating Mechanical Trading Station!"
+
+}

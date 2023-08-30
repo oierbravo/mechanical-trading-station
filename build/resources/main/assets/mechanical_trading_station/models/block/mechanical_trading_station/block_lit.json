@@ -1,0 +1,9 @@
+{
+	"credit": "Made with Blockbench",
+	"parent": "mechanical_trading_station:block/mechanical_trading_station/block",
+	"textures": {
+		"base": "mechanical_trading_station:block/mechanical_trading_station_lit",
+		"particle": "mechanical_trading_station:block/mechanical_trading_station_lit"
+	}
+
+}

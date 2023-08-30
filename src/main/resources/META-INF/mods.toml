@@ -1,0 +1,39 @@
+modLoader = "javafml"
+loaderVersion="[43,)"
+license = "MIT License"
+[[mods]]
+modId = "mechanical_trading_station"
+version = "${file.jarVersion}"
+displayName = "Mechanical Trading Station"
+logoFile="logo.png"
+description = '''
+Trading Station Addon with Create support.
+'''
+
+[[dependencies.mechanical_trading_station]]
+modId = "forge"
+mandatory = true
+versionRange="[43.0.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.mechanical_trading_station]]
+modId = "minecraft"
+mandatory = true
+versionRange="[1.19.2,1.20)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.mechanical_trading_station]]
+modId = "create"
+mandatory = true
+versionRange="[0.5.1.c,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.mechanical_trading_station]]
+modId = "trading_station"
+mandatory = true
+versionRange="[0.1.1,)"
+ordering = "AFTER"
+side = "BOTH"
