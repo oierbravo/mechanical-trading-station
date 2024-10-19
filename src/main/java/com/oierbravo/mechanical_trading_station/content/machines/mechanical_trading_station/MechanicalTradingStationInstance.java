@@ -16,17 +16,16 @@ public class MechanicalTradingStationInstance extends ShaftInstance<MechanicalTr
         super(materialManager, blockEntity);
     }
 
-    @Override
-    public void beginFrame() {
-    }
 
     @Override
     protected Instancer<RotatingData> getModel() {
-
-
         BlockState referenceState = blockState.rotate(blockEntity.getLevel(), blockEntity.getBlockPos(), Rotation.CLOCKWISE_180);
         Direction facing = referenceState.getValue(BlockStateProperties.HORIZONTAL_FACING);
         return getRotatingMaterial().getModel(AllPartialModels.SHAFT_HALF, referenceState, facing);
     }
 
+    @Override
+    public void beginFrame() {
+
+    }
 }

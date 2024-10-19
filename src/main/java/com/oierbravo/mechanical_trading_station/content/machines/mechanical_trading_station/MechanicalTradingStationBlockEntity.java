@@ -1,20 +1,32 @@
 package com.oierbravo.mechanical_trading_station.content.machines.mechanical_trading_station;
 
+import com.oierbravo.mechanical_lemon_lib.foundation.blockEntity.behaviour.DynamicCycleBehavior;
+import com.oierbravo.mechanical_lemon_lib.foundation.blockEntity.behaviour.RecipeRequirementsBehaviour;
+import com.oierbravo.mechanical_lemon_lib.jade.IHavePercent;
+import com.oierbravo.trading_station.content.trading_recipe.IHaveMachineId;
 import com.oierbravo.trading_station.content.trading_recipe.TradingRecipe;
 import com.oierbravo.trading_station.content.trading_station.ITradingStationBlockEntity;
+import com.oierbravo.trading_station.content.trading_station.TradingStationBlock;
+import com.oierbravo.trading_station.content.trading_station.TradingStationMenu;
 import com.oierbravo.trading_station.foundation.util.ModLang;
 import com.oierbravo.trading_station.network.packets.ItemStackSyncS2CPacket;
 import com.oierbravo.trading_station.registrate.ModMessages;
 import com.oierbravo.trading_station.registrate.ModRecipes;
+import com.simibubi.create.content.equipment.toolbox.ToolboxMenu;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlock;
 import com.simibubi.create.content.redstone.displayLink.source.AccumulatedItemCountDisplaySource;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -39,12 +51,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 
-public class MechanicalTradingStationBlockEntity extends KineticBlockEntity implements MenuProvider, ITradingStationBlockEntity {
+public class MechanicalTradingStationBlockEntity extends KineticBlockEntity implements MenuProvider, ITradingStationBlockEntity,DynamicCycleBehavior.DynamicCycleBehaviorSpecifics, IHavePercent, IHaveMachineId, RecipeRequirementsBehaviour.RecipeRequirementsSpecifics<TradingRecipe>{
+
+    private CompoundTag updateTag;
 
     public ItemStackHandler inputItems = createInputItemHandler();
     public ItemStackHandler outputItems = createOutputItemHandler();
@@ -61,10 +76,25 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
     private boolean isWorking = false;
 
     Optional<TradingRecipe> targetedRecipe;
+    String targetedRecipeId;
 
+    DynamicCycleBehavior dynamicCycleBehaviour;
+    public RecipeRequirementsBehaviour<TradingRecipe> recipeRequirementsBehaviour;
+
+
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        dynamicCycleBehaviour = new DynamicCycleBehavior(this);
+        behaviours.add(dynamicCycleBehaviour);
+
+        recipeRequirementsBehaviour = new RecipeRequirementsBehaviour<TradingRecipe>(this);
+        behaviours.add(recipeRequirementsBehaviour);
+    }
 
     public MechanicalTradingStationBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+        updateTag = getPersistentData();
         containerData = createContainerData();
         targetedRecipe = Optional.empty();
     }
@@ -135,13 +165,7 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
             @Override
             protected void onContentsChanged(int slot) {
                 setChanged();
-                resetProgress();
-                if(!getLevel().isClientSide()) {
-                    ModMessages.sendToClients(new ItemStackSyncS2CPacket(slot,this.getStackInSlot(0), getBlockPos(), ItemStackSyncS2CPacket.SlotType.INPUT));
-                }
-                if(!getLevel().isClientSide()) {
-                    getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-                }
+                //resetProgress();
             }
             @Override
             public boolean isItemValid(int slot, ItemStack stack) {
@@ -157,13 +181,6 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
             @Override
             protected void onContentsChanged(int slot) {
                 setChanged();
-                if(!getLevel().isClientSide()) {
-                    ModMessages.sendToClients(new ItemStackSyncS2CPacket(slot, this.getStackInSlot(slot), getBlockPos(), ItemStackSyncS2CPacket.SlotType.OUTPUT));
-                }
-                if(!getLevel().isClientSide()) {
-                    getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-                }
-                // clientSync();
             }
             @Override
             public boolean isItemValid(int slot, ItemStack stack) {
@@ -180,39 +197,11 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
         if(cap == ForgeCapabilities.ITEM_HANDLER){
             if(side == Direction.DOWN)
                 return outputItemHandler.cast();
-
-            Direction localDir = this.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
-            if(side == directionLefttBlockMap.get(localDir))
-                return outputItemHandler.cast();
             return inputItemHandler.cast();
-
         }
-
         return super.getCapability(cap, side);
     }
-    private final Map<Direction, Direction> directionLefttBlockMap =
-            Map.of(Direction.NORTH, Direction.WEST,
-                    Direction.SOUTH, Direction.EAST,
-                    Direction.WEST, Direction.NORTH,
-                    Direction.EAST, Direction.SOUTH
-            );
-    private final Map<Direction, Direction> directionRightBlockMap =
-            Map.of(Direction.NORTH, Direction.EAST,
-                    Direction.SOUTH, Direction.WEST,
-                    Direction.WEST, Direction.SOUTH,
-                    Direction.EAST, Direction.NORTH
-            );
 
-    public Block getLeftSide(){
-        BlockPos currentPos = this.getBlockPos();
-        Direction localDir = this.getBlockState().getValue(HORIZONTAL_FACING);
-        return this.level.getBlockState(currentPos.relative(directionLefttBlockMap.get(localDir))).getBlock();
-    }
-    private BlockState getRightSide(){
-        BlockPos currentPos = this.getBlockPos();
-        Direction localDir = this.getBlockState().getValue(HORIZONTAL_FACING);
-        return this.level.getBlockState(currentPos.relative(directionRightBlockMap.get(localDir)));
-    }
     public LazyOptional<IItemHandler>  getInputItemHandler(){
         return inputItemHandler;
     }
@@ -245,52 +234,49 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
     }
 
     @Override
-    public IEnergyStorage getEnergyStorage() {
-        return null;
+    public LazyOptional<IEnergyStorage> getEnergyStorageHandler() {
+        return LazyOptional.empty();
     }
 
     @Override
-    public String getTraderType() {
-        return "mechanical";
+    public byte getRedstoneMode() {
+        return currentRedstoneMode;
     }
+
 
     public boolean canProcess(ItemStack stack) {
         return getRecipe().isPresent();
     }
 
     public void resetProgress() {
-        this.progress = 0;
-        this.maxProgress = 1;
+    //    this.progress = 0;
+    //    this.maxProgress = 1;
     }
 
     @Override
-    public int getProcessingTime(){
-            return getRecipe().map(TradingRecipe::getProcessingTime).orElse(1);
-    }
-    protected Optional<TradingRecipe> getRecipe(){
-        SimpleContainer inputInventory = getInputInventory();
-        if(!getTargetItemHandler().getStackInSlot(0).isEmpty())
-            return ModRecipes.findByOutput(level,getTargetItemHandler().getStackInSlot(0));
-        return ModRecipes.find(inputInventory,level, getBiome(), getTraderType());
-    };
+    public void onCycleCompleted() {
 
-
-    public boolean isPowered() {
-        if(currentRedstoneMode == REDSTONE_MODES.IGNORE.ordinal())
-            return true;
-        if(currentRedstoneMode == REDSTONE_MODES.LOW.ordinal())
-            return !this.getLevel().getBlockState(getBlockPos())
-                    .getValue(BlockStateProperties.POWERED);
-
-        return this.getLevel().getBlockState(getBlockPos())
-                .getValue(BlockStateProperties.POWERED);
     }
 
     @Override
-    public Biome getBiome() {
-        return this.getLevel().getBiome(getBlockPos()).get();
+    public float getKineticSpeed() {
+        return getSpeed();
     }
 
+    @Override
+    public int getProcessingTime() {
+        return getRecipe().map(TradingRecipe::getProcessingTime).orElse(1);
+    }
+
+    @Override
+    public boolean tryProcess(boolean simulate) {
+        return false;
+    }
+
+    @Override
+    public void playSound() {
+
+    }
 
 
     public void craftItem() {
@@ -310,10 +296,10 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
                     }
                 }
             }
-            this.outputItems.insertItem(0, recipe.get().getResultItem(), false);
+            this.outputItems.insertItem(0, recipe.get().getResult(), false);
         }
         DisplayLinkBlock.sendToGatherers(level, getBlockPos(),
-                (dgte, b) -> b.itemReceived(dgte, recipe.get().getResultItem().getCount()), TradedItemCountDisplaySource.class);
+                (dgte, b) -> b.itemReceived(dgte, recipe.get().getResult().getCount()), TradedItemCountDisplaySource.class);
 
         this.resetProgress();
     }
@@ -338,6 +324,21 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
         return currentRedstoneMode;
     }
 
+    @Override
+    public boolean isPowered() {
+        if(getSpeed() == 0)
+            return true;
+        if(!isSpeedRequirementFulfilled())
+            return false;
+        if(currentRedstoneMode == REDSTONE_MODES.IGNORE.ordinal())
+            return true;
+        if(currentRedstoneMode == REDSTONE_MODES.LOW.ordinal())
+            return !this.getLevel().getBlockState(getBlockPos())
+                    .getValue(BlockStateProperties.POWERED);
+
+        return this.getLevel().getBlockState(getBlockPos())
+                .getValue(BlockStateProperties.POWERED);
+    }
 
 
     @Override
@@ -348,20 +349,20 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
     }
 
 
+
     @Override
     public void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.put("input", inputItems.serializeNBT());
         tag.put("output", outputItems.serializeNBT());
         tag.put("target", targetItemHandler.serializeNBT());
-        tag.putInt("trading_station.progress", progress);
-        tag.putInt("trading_station.maxProgress", maxProgress);
+        tag.putInt("progress", progress);
+        tag.putInt("maxProgress", maxProgress);
         tag.putByte("redstoneMode", currentRedstoneMode);
-        String targetedRecipeId = "";
-        if(targetedRecipe.isPresent()){
-            targetedRecipeId = targetedRecipe.get().getId().toString();
+        tag.putBoolean("isWorking", isWorking);
+        if(targetedRecipeId != null){
+            tag.putString("targetedRecipeId", targetedRecipeId);
         }
-        tag.putString("targetedRecipeId", targetedRecipeId);
 
     }
     @Override
@@ -370,12 +371,28 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
         inputItems.deserializeNBT(tag.getCompound("input"));
         outputItems.deserializeNBT(tag.getCompound("output"));
         targetItemHandler.deserializeNBT(tag.getCompound("target"));
-        progress = tag.getInt("trading_station.progress");
-        maxProgress = tag.getInt("trading_station.maxProgress");
+        progress = tag.getInt("progress");
+        maxProgress = tag.getInt("maxProgress");
         currentRedstoneMode = tag.getByte("redstoneMode");
+        isWorking = tag.getBoolean("isWorking");
         setTargetedRecipeById(tag.getString("targetedRecipeId"));
 
 
+    }
+
+    public void sendToMenu(FriendlyByteBuf buffer) {
+        buffer.writeBlockPos(this.getBlockPos());
+        buffer.writeNbt(this.getUpdateTag());
+    }
+
+    public void drops() {
+        SimpleContainer inventory = new SimpleContainer(inputItems.getSlots() + 1);
+        for (int i = 0; i < inputItems.getSlots(); i++) {
+            inventory.setItem(i, inputItems.getStackInSlot(i));
+        }
+        inventory.setItem(inputItems.getSlots(), inputItems.getStackInSlot(0));
+
+        Containers.dropContents(this.level, this.worldPosition, inventory);
     }
 
     public Component getDisplayName() {
@@ -385,14 +402,15 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int pContainerId, Inventory pPlayerInventory, Player pPlayer) {
-        return new MechanicalTradingStationMenu(pContainerId, pPlayerInventory, this, this.containerData);
+        return TradingStationMenu.create(pContainerId, pPlayerInventory, this, this.containerData);
+
     }
 
     protected void updateProgress() {
         this.progress += Math.abs(getSpeed()/5);
     }
 
-    @Override
+    /*@Override
     public void tick() {
         super.tick();
 
@@ -418,36 +436,54 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
 
         }
         setChanged(getLevel(), getBlockPos(), getBlockState());
-    }
+    }*/
 
     @Override
     public int getProgressPercent() {
-        return progress / maxProgress;
+        return this.progress * 100 / this.maxProgress;
     }
 
-    private void setWorking(boolean value){
-        if(isWorking != value){
-            isWorking = value;
-            BlockState pState = getBlockState().setValue(AbstractFurnaceBlock.LIT, Boolean.valueOf(isWorking()));
-
-            getLevel().setBlock(getBlockPos(), pState, 3);
-            setChanged(getLevel(), getBlockPos(), pState);
-        }
+    @Override
+    public int getProgress() {
+        return this.progress;
     }
 
-    private boolean isWorking() {
+
+    @Override
+    public int getMaxProgress() {
+        return this.maxProgress;
+    }
+
+
+    public void setWorking(boolean value){
+        isWorking = value;
+        BlockState pState = getBlockState().setValue(TradingStationBlock.LIT, isWorking());
+
+        getLevel().setBlock(getBlockPos(), pState, 2);
+        setChanged(getLevel(), getBlockPos(), pState);
+    }
+
+    public boolean isWorking() {
         return isWorking;
     }
+
+    protected Optional<TradingRecipe> getRecipe(){
+        if(targetedRecipeId == null)
+            return Optional.empty();
+        if(!targetedRecipeId.isEmpty())
+            targetedRecipe = ModRecipes.findById(this.level,targetedRecipeId);
+        return targetedRecipe;
+    };
+
     public boolean canCraftItem() {
         SimpleContainer inputInventory = getInputInventory();
-
         Optional<TradingRecipe> match = getRecipe();
 
-        if(!match.isPresent()) {
+        if(match.isEmpty()) {
             return false;
         }
         return hasEnoughInputItems(inputInventory, match.get().getIngredients())
-                && hasEnoughOutputSpace(this.outputItems, match.get().getResultItem());
+                && hasEnoughOutputSpace(this.outputItems, match.get().getResult());
     }
     protected boolean hasEnoughInputItems(SimpleContainer inventory, NonNullList<Ingredient> ingredients){
         int enough = 0;
@@ -488,16 +524,15 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
     public void setTargetedRecipeById(ResourceLocation recipeId){
         Optional<TradingRecipe> recipe = ModRecipes.findById(this.getLevel(),recipeId);
         targetedRecipe = recipe;
-        if(recipe.isPresent()) {
-            targetItemHandler.setStackInSlot(0,recipe.get().getResultItem());
-        }
-
+        targetedRecipeId = recipeId.toString();
+        recipe.ifPresent(tradingRecipe -> targetItemHandler.setStackInSlot(0, tradingRecipe.getResult()));
+        setChanged();
     }
     public void setTargetedRecipeById(String recipeId){
         Optional<TradingRecipe> recipe = ModRecipes.findById(this.getLevel(), recipeId);
         targetedRecipe = recipe;
         if(recipe.isPresent()) {
-            targetItemHandler.setStackInSlot(0,recipe.get().getResultItem());
+            targetItemHandler.setStackInSlot(0,recipe.get().getResult());
         }
         setChanged();
 
@@ -508,10 +543,47 @@ public class MechanicalTradingStationBlockEntity extends KineticBlockEntity impl
     }
     @Override
     public String getTargetedRecipeId() {
-        if(!targetedRecipe.isPresent()){
-            return "";
-        }
-        return targetedRecipe.get().getId().toString();
+        if(targetedRecipe.isPresent())
+            return targetedRecipe.get().getId().toString();
+        /*if(updateTag.contains("targetedRecipeId"))
+            return updateTag.getString("targetedRecipeId");*/
+        return "";
+    }
+    @Nullable
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        readClient(tag);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket packet) {
+        CompoundTag tag = packet.getTag();
+        readClient(tag == null ? new CompoundTag() : tag);
+    }
+
+    @Override
+    public String getMachineId() {
+        return "mechanical";
+    }
+
+    @Override
+    public boolean hasEnoughOutputSpace() {
+        if(outputItems.getStackInSlot(0).getCount() == outputItems.getStackInSlot(0).getMaxStackSize()){
+            return false;
+        }
+        if(!outputItems.getStackInSlot(0).isEmpty() && !outputItems.getStackInSlot(0).is(getRecipe().get().getResult().getItem())){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean matchIngredients(TradingRecipe tradingRecipe) {
+        return false;
+    }
 }

@@ -16,7 +16,6 @@ import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ModelFile;
 
@@ -28,12 +27,12 @@ import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
 
 public class ModBlocks {
 
-    public static final CreateRegistrate REGISTRATE = MechanicalTradingStation.registrate().creativeModeTab(() -> ModCreativeTab.MAIN);
+    public static final CreateRegistrate REGISTRATE = MechanicalTradingStation.registrate();//.setCreativeTab();
 
     public static final BlockEntry<MechanicalTradingStationBlock> MECHANICAL_TRADING_STATION = REGISTRATE.block("mechanical_trading_station", MechanicalTradingStationBlock::new)
             .initialProperties(SharedProperties::stone)
             .lang("Mechanical Trading Station")
-            .properties(p -> p.color(MaterialColor.METAL))
+            //.properties(p -> p.color(META))
             .transform(pickaxeOnly())
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
@@ -56,7 +55,7 @@ public class ModBlocks {
     public static final BlockEntry<MechanicalTradingStationBlock> MECHANICAL_TRADING_STATION_UNBREAKABLE = REGISTRATE.block("mechanical_trading_station_unbreakable", MechanicalTradingStationBlock::new)
             .initialProperties(SharedProperties::stone)
             .lang("Mechanical Trading Station (Unbreakable)")
-            .properties(p -> p.color(MaterialColor.METAL))
+            //.properties(p -> p.color(MaterialColor.METAL))
             .transform(pickaxeOnly())
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {

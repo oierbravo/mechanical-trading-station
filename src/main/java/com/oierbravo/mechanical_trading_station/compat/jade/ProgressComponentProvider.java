@@ -13,10 +13,12 @@ import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.IServerDataProvider;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
+import snownee.jade.api.ui.BoxStyle;
 import snownee.jade.api.ui.IElementHelper;
 import snownee.jade.api.ui.IProgressStyle;
+import snownee.jade.util.Color;
 
-public class ProgressComponentProvider  implements IBlockComponentProvider, IServerDataProvider<BlockEntity> {
+public class ProgressComponentProvider  implements IBlockComponentProvider, IServerDataProvider<BlockAccessor> {
 
     @Override
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
@@ -26,21 +28,23 @@ public class ProgressComponentProvider  implements IBlockComponentProvider, ISer
             IElementHelper elementHelper = tooltip.getElementHelper();
             IProgressStyle progressStyle = elementHelper.progressStyle();
             if(progress > 0)
-                tooltip.add(elementHelper.progress((float)progress / 100, Component.translatable("trading_station.tooltip.progress", progress), progressStyle,elementHelper.borderStyle()));
+                tooltip.add(elementHelper.progress((float)progress / 100, ModLang.translate("mechanical_trading_station" + ".tooltip.progress", progress).component(),elementHelper.progressStyle().color(Color.hex("#FFFF00").toInt()), BoxStyle.DEFAULT,true));
+
         }
 
     }
 
-    @Override
-    public void appendServerData(CompoundTag compoundTag, ServerPlayer serverPlayer, Level level, BlockEntity blockEntity, boolean b) {
-        if(blockEntity instanceof MechanicalTradingStationBlockEntity){
-            MechanicalTradingStationBlockEntity tradingStationBlockEntity = (MechanicalTradingStationBlockEntity) blockEntity;
-            compoundTag.putInt("mechanical_trading_station.progress",tradingStationBlockEntity.getProgressPercent());
-        }
-    }
 
     @Override
     public ResourceLocation getUid() {
         return MechanicalTradingStationPlugin.MOD_DATA;
+    }
+
+
+    @Override
+    public void appendServerData(CompoundTag compoundTag, BlockAccessor blockAccessor) {
+        if(blockAccessor.getBlockEntity() instanceof MechanicalTradingStationBlockEntity tradingStationBlockEntity){
+            compoundTag.putInt("mechanical_trading_station.progress",tradingStationBlockEntity.getProgressPercent());
+        }
     }
 }

@@ -1,12 +1,14 @@
+<!-- modrinth_exclude.start -->
 Mechanical Trading Station
 =================
+<!-- modrinth_exclude.end -->
 
 Trading Station with Create support.
 Requires *Trading station mod*
 
 Features
 ---------
-- Kinetic machine, use rotation to work.
+- Kinetic machine, uses rotation to work.
 - Jade integration.
 - KubeJS support (via base mod)
 - Provides `mechanical` trading station type
