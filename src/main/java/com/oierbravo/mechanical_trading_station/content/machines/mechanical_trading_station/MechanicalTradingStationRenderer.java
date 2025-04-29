@@ -1,30 +1,24 @@
 package com.oierbravo.mechanical_trading_station.content.machines.mechanical_trading_station;
 
-import com.jozufozu.flywheel.backend.Backend;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import com.oierbravo.trading_station.content.trading_station.ITradingStationBlockEntity;
+import com.oierbravo.trading_station.content.trading_recipe.TradingRecipe;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
-import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.render.SuperByteBuffer;
+import dev.engine_room.flywheel.api.visualization.VisualizationManager;
+import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.render.SuperByteBuffer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import org.joml.Quaterniond;
-import org.joml.QuaterniondInterpolator;
+
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 
 public class MechanicalTradingStationRenderer  extends KineticBlockEntityRenderer<MechanicalTradingStationBlockEntity> {
     public MechanicalTradingStationRenderer(BlockEntityRendererProvider.Context context) {
@@ -34,32 +28,27 @@ public class MechanicalTradingStationRenderer  extends KineticBlockEntityRendere
     @Override
     protected void renderSafe(MechanicalTradingStationBlockEntity pBlockEntity, float pPartialTick, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pPackedOverlay) {
 
-        if(pBlockEntity instanceof MechanicalTradingStationBlockEntity) {
-            ITradingStationBlockEntity blockEntity = (ITradingStationBlockEntity) pBlockEntity;
-            if (!blockEntity.getTargetItemStack().isEmpty()) {
-                pPoseStack.pushPose();
-                pPoseStack.translate(.5, .5, .5);
-                if(blockEntity.isWorking()){
-                    float rot = ((blockEntity.getLevel().getGameTime() + pPartialTick) % 180F) * 2;
-                    pPoseStack.mulPose(Axis.YP.rotationDegrees(rot));
-
-                }
-                pPoseStack.translate(0, .7d, 0);
-
-                renderBlock(pPoseStack, pBufferSource, pPackedLight, pPackedOverlay, blockEntity.getTargetItemStack(),pBlockEntity);
-                pPoseStack.popPose();
+        if (pBlockEntity.getRecipe().isPresent()) {
+            pPoseStack.pushPose();
+            pPoseStack.translate(.5, .5, .5);
+            float rot = 0F;
+            if(pBlockEntity.dynamicCycleBehaviour.isRunning()){
+                rot = ((pBlockEntity.getLevel().getGameTime() + pPartialTick) % 90F) * 8;
             }
+            pPoseStack.mulPose(Axis.YP.rotationDegrees(rot));
+            pPoseStack.translate(0, .7d, 0);
+
+            renderBlock(pPoseStack, pBufferSource, pPackedLight, pPackedOverlay,((TradingRecipe) pBlockEntity.getRecipe().get().value()).getResult(),pBlockEntity);
+            pPoseStack.popPose();
         }
 
-        if (Backend.canUseInstancing(pBlockEntity.getLevel()))
+        if (VisualizationManager.supportsVisualization(pBlockEntity.getLevel()))
             return;
 
         VertexConsumer vb = pBufferSource.getBuffer(RenderType.solid());
         BlockState blockState = pBlockEntity.getBlockState();
 
-        Direction facing = blockState.getValue(BlockStateProperties.HORIZONTAL_FACING);
-
-        SuperByteBuffer superBuffer = CachedBufferer.partialFacing(AllPartialModels.SHAFT_HALF, blockState, facing.getOpposite());
+        SuperByteBuffer superBuffer = CachedBuffers.partialFacing(AllPartialModels.SHAFT_HALF, blockState, blockState.getValue(HORIZONTAL_FACING).getOpposite());
         standardKineticRotationTransform(superBuffer, pBlockEntity, pPackedLight).renderInto(pPoseStack, vb);
     }
 

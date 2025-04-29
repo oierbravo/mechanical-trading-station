@@ -16,5 +16,6 @@
       ],
       "rolls": 1.0
     }
-  ]
+  ],
+  "random_sequence": "mechanical_trading_station:blocks/mechanical_trading_station_unbreakable"
 }

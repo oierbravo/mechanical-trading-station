@@ -3,17 +3,16 @@ package com.oierbravo.mechanical_trading_station.content.machines.mechanical_tra
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlock;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlockEntity;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
-import com.simibubi.create.content.redstone.displayLink.source.AccumulatedItemCountDisplaySource;
 import com.simibubi.create.content.redstone.displayLink.source.NumericSingleLineDisplaySource;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
-import com.simibubi.create.foundation.utility.Components;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 public class TradedItemCountDisplaySource extends NumericSingleLineDisplaySource {
 
     @Override
     protected MutableComponent provideLine(DisplayLinkContext context, DisplayTargetStats stats) {
-        return Components.literal(String.valueOf(context.sourceConfig()
+        return Component.translatable(String.valueOf(context.sourceConfig()
                 .getInt("Traded")));
     }
 

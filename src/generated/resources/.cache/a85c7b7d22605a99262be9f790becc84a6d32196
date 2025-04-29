@@ -1,0 +1,10 @@
+// 1.21.1	2025-04-21T05:58:31.317687967	Registrate Provider for mechanical_trading_station [Registries, Data Maps, Recipes, Advancements, Loot Tables, Tags (blocks), Tags (enchantments), Tags (items), Tags (fluids), Tags (entity_types), generic_server_provider, Blockstates, Item models, Lang (en_us/en_ud), generic_client_provider]
+021d81599ec6ffba29ef24693db08263afd3b00a assets/mechanical_trading_station/blockstates/mechanical_trading_station.json
+021d81599ec6ffba29ef24693db08263afd3b00a assets/mechanical_trading_station/blockstates/mechanical_trading_station_unbreakable.json
+da527939323ec77b175053d6c5df1fec7b331889 assets/mechanical_trading_station/lang/en_ud.json
+3041b9e555cda58331a99bcd846eee5ff7920618 assets/mechanical_trading_station/lang/en_us.json
+7f725476b1adef0febe10e2cc7080ab9cd8d8de5 assets/mechanical_trading_station/models/item/mechanical_trading_station.json
+7f725476b1adef0febe10e2cc7080ab9cd8d8de5 assets/mechanical_trading_station/models/item/mechanical_trading_station_unbreakable.json
+6bfbe83d85a4620c9d0d913911340d2b6bc531b7 data/mechanical_trading_station/loot_table/blocks/mechanical_trading_station.json
+17167277c36beb4731954c615b15c53b09f60d20 data/mechanical_trading_station/loot_table/blocks/mechanical_trading_station_unbreakable.json
+481603d6e9da9a731247ac03f1d6a66b8c96da12 data/minecraft/tags/block/mineable/pickaxe.json

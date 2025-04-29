@@ -1,26 +1,18 @@
 package com.oierbravo.mechanical_trading_station.content.machines.mechanical_trading_station;
 
 import com.oierbravo.mechanical_trading_station.registrate.ModBlockEntities;
-import com.oierbravo.trading_station.content.trading_station.ITradingStationBlockEntity;
-import com.oierbravo.trading_station.content.trading_station.TradingStationBlockEntity;
-import com.oierbravo.trading_station.content.trading_station.TradingStationScreen;
-import com.oierbravo.trading_station.content.trading_station.powered.PoweredTradingStationBlockEntity;
-import com.simibubi.create.AllItems;
 import com.simibubi.create.AllShapes;
 import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
-import com.simibubi.create.content.redstone.thresholdSwitch.ThresholdSwitchBlockEntity;
-import com.simibubi.create.content.redstone.thresholdSwitch.ThresholdSwitchScreen;
 import com.simibubi.create.foundation.block.IBE;
-import com.simibubi.create.foundation.gui.ScreenOpener;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -36,10 +28,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -120,17 +108,20 @@ public class MechanicalTradingStationBlock extends HorizontalKineticBlock implem
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand handIn, BlockHitResult hit) {
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHitResult) {
         if (!pLevel.isClientSide()) {
             BlockEntity blockEntity = pLevel.getBlockEntity(pPos);
             if(blockEntity instanceof MechanicalTradingStationBlockEntity tradingStationBlockEntity) {
-                NetworkHooks.openScreen((ServerPlayer) pPlayer,tradingStationBlockEntity, tradingStationBlockEntity::sendToMenu);
+                if (!pLevel.isClientSide && pPlayer instanceof ServerPlayer serverPlayer) {
+                    serverPlayer.openMenu(tradingStationBlockEntity, tradingStationBlockEntity::sendToMenu);
+
+                }
             } else {
                 throw new IllegalStateException("Our Container provider is missing!");
             }
         }
 
-        return InteractionResult.sidedSuccess(pLevel.isClientSide());
+        return ItemInteractionResult.sidedSuccess(pLevel.isClientSide());
 
     }
 
@@ -154,7 +145,16 @@ public class MechanicalTradingStationBlock extends HorizontalKineticBlock implem
     public VoxelShape getCollisionShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
         return SHAPE;
     }
-
+    @Override
+    public void neighborChanged(BlockState state, Level worldIn, BlockPos pos, Block blockIn, BlockPos fromPos,
+                                boolean isMoving) {
+        super.neighborChanged(state, worldIn, pos, blockIn, fromPos, isMoving);
+        if (worldIn.isClientSide)
+            return;
+        if (!worldIn.getBlockTicks()
+                .willTickThisTick(pos, this))
+            worldIn.scheduleTick(pos, this, 0);
+    }
     @Override
     public void tick(BlockState state, ServerLevel worldIn, BlockPos pos, RandomSource r) {
         boolean previouslyPowered = state.getValue(POWERED);
@@ -165,29 +165,4 @@ public class MechanicalTradingStationBlock extends HorizontalKineticBlock implem
     public String getMachineId() {
         return "mechanical";
     }
-   /* public static boolean canOutputTo(BlockGetter world, BlockPos basinPos, Direction direction) {
-        BlockPos neighbour = basinPos.relative(direction);
-        BlockPos output = neighbour.below();
-        BlockState blockState = world.getBlockState(neighbour);
-
-        if (FunnelBlock.isFunnel(blockState)) {
-            if (FunnelBlock.getFunnelFacing(blockState) == direction)
-                return false;
-        } else if (!blockState.getCollisionShape(world, neighbour)
-                .isEmpty()) {
-            return false;
-        } else {
-            BlockEntity blockEntity = world.getBlockEntity(output);
-            if (blockEntity instanceof BeltBlockEntity) {
-                BeltBlockEntity belt = (BeltBlockEntity) blockEntity;
-                return belt.getSpeed() == 0 || belt.getMovementFacing() != direction.getOpposite();
-            }
-        }
-
-        DirectBeltInputBehaviour directBeltInputBehaviour =
-                BlockEntityBehaviour.get(world, output, DirectBeltInputBehaviour.TYPE);
-        if (directBeltInputBehaviour != null)
-            return directBeltInputBehaviour.canInsertFromSide(direction);
-        return false;
-    }*/
 }

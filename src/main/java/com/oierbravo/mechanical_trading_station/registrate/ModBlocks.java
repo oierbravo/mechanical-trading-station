@@ -2,38 +2,27 @@ package com.oierbravo.mechanical_trading_station.registrate;
 
 import com.oierbravo.mechanical_trading_station.MechanicalTradingStation;
 import com.oierbravo.mechanical_trading_station.content.machines.mechanical_trading_station.MechanicalTradingStationBlock;
-import com.oierbravo.mechanical_trading_station.content.machines.mechanical_trading_station.TradedItemCountDisplaySource;
-import com.oierbravo.trading_station.registrate.ModCreativeTab;
-import com.simibubi.create.content.kinetics.BlockStressDefaults;
-import com.simibubi.create.content.redstone.displayLink.source.AccumulatedItemCountDisplaySource;
-import com.simibubi.create.foundation.data.AssetLookup;
-import com.simibubi.create.foundation.data.BlockStateGen;
+import com.oierbravo.mechanical_trading_station.infrastructure.config.ModStress;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
-import com.tterrag.registrate.providers.DataGenContext;
-import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraftforge.client.model.generators.ConfiguredModel;
-import net.minecraftforge.client.model.generators.ModelFile;
+import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
 
-import java.util.function.Function;
-
-import static com.simibubi.create.content.redstone.displayLink.AllDisplayBehaviours.assignDataBehaviour;
+import static com.simibubi.create.api.behaviour.display.DisplaySource.displaySource;
 import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
 import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
 
 public class ModBlocks {
 
-    public static final CreateRegistrate REGISTRATE = MechanicalTradingStation.registrate();//.setCreativeTab();
+    public static final CreateRegistrate REGISTRATE = MechanicalTradingStation.registrate();
 
     public static final BlockEntry<MechanicalTradingStationBlock> MECHANICAL_TRADING_STATION = REGISTRATE.block("mechanical_trading_station", MechanicalTradingStationBlock::new)
-            .initialProperties(SharedProperties::stone)
+            .initialProperties(SharedProperties::softMetal)
             .lang("Mechanical Trading Station")
-            //.properties(p -> p.color(META))
             .transform(pickaxeOnly())
+            //.blockstate(new MechanicalTradingStationModelGen()::generate)
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                         String modelFileName = "mechanical_trading_station:block/mechanical_trading_station/block";
@@ -46,16 +35,17 @@ public class ModBlocks {
 
                     })
             )
-            .onRegister(assignDataBehaviour(new TradedItemCountDisplaySource(), "traded_items"))
-            .transform(BlockStressDefaults.setImpact(4.0))
+            .transform(displaySource(ModDisplaySources.TRADED_ITEMS_COUNT))
+
+            // .onRegister(assignDataBehaviour(new TradedItemCountDisplaySource(), "traded_items"))
+            .transform(ModStress.setImpact(4.0))
             .item()
             .transform(customItemModel())
             .register();
 
     public static final BlockEntry<MechanicalTradingStationBlock> MECHANICAL_TRADING_STATION_UNBREAKABLE = REGISTRATE.block("mechanical_trading_station_unbreakable", MechanicalTradingStationBlock::new)
-            .initialProperties(SharedProperties::stone)
+            .initialProperties(SharedProperties::softMetal)
             .lang("Mechanical Trading Station (Unbreakable)")
-            //.properties(p -> p.color(MaterialColor.METAL))
             .transform(pickaxeOnly())
             .blockstate((ctx, prov) ->
                     prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
@@ -69,8 +59,7 @@ public class ModBlocks {
 
                     })
             )
-            .onRegister(assignDataBehaviour(new TradedItemCountDisplaySource(), "traded_items"))
-            .transform(BlockStressDefaults.setImpact(4.0))
+            .transform(displaySource(ModDisplaySources.TRADED_ITEMS_COUNT))            .transform(ModStress.setImpact(4.0))
             .item()
             .transform(customItemModel("mechanical_trading_station/item"))
             .register();
