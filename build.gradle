@@ -140,7 +140,7 @@ repositories {
         }
     }
     maven {
-        url "https://maven.fosil.eu/"
+        url "https://maven.fosil.eu/releases"
     }
     mavenLocal()
     flatDir {
@@ -215,8 +215,9 @@ publishMods {
             clientRequired = true
             serverRequired = true
             optional("jei")
+            optional("kubejs")
             requires("create")
-            requires("mechanicals")
+            requires("mechanicals-lib")
             requires("trading-station")
         }
     }
@@ -227,8 +228,9 @@ publishMods {
             projectId = "${modrinth_id}"
             minecraftVersions.add(minecraft_version)
             optional("jei")
+            optional("kubejs")
             requires("create")
-            requires("mechanicals")
+            requires("mechanicals-lib")
             requires("trading-station")
         }
     }
